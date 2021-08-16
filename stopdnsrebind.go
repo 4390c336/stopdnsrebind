@@ -39,7 +39,7 @@ func (a Stopdnsrebind) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dn
 		}
 	}
 
-	return plugin.NextOrFailure(a.Name(), a.Next, ctx, w, r)
+	return rcode,nil
 }
 
 var reservedIPv4Nets = []net.IPNet{
