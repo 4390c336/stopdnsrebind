@@ -39,7 +39,9 @@ func (a Stopdnsrebind) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dn
 		}
 	}
 
-	return rcode,nil
+	w.WriteMsg(nw.Msg)
+
+	return 0, nil
 }
 
 var reservedIPv4Nets = []net.IPNet{
