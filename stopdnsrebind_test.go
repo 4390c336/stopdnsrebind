@@ -76,6 +76,14 @@ func TestBlockingResponse(t *testing.T) {
 				Qtype:  dns.TypeAAAA,
 			},
 		},
+		{
+			Expected: dns.RcodeSuccess,
+			test: test.Case{
+				Answer: []dns.RR{test.MX("example.org. 585 IN MX 50 mx01.example.org.")},
+				Qname:  "example.org",
+				Qtype:  dns.TypeMX,
+			},
+		},
 	}
 
 	for _, tc := range tests {

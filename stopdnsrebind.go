@@ -24,9 +24,14 @@ func (a Stopdnsrebind) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dn
 		return rcode, err
 	}
 
-	for i := range nw.Msg.Answer {
-		//pase the answer
-		s := strings.Split(nw.Msg.Answer[i].String(), "\t")
+	for _, ans := range nw.Msg.Answer {
+		//we only care about A and AAAA types
+		if ans.Header().Rrtype != dns.TypeA && ans.Header().Rrtype != dns.TypeAAAA {
+			continue
+		}
+
+		//parse the answer
+		s := strings.Split(ans.String(), "\t")
 
 		ip := net.ParseIP(s[4])
 
