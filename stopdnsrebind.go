@@ -3,7 +3,7 @@ package stopdnsrebind
 import (
 	"context"
 	"net"
-	"strings"
+	"reflect"
 
 	"github.com/coredns/coredns/plugin"
 	"github.com/coredns/coredns/plugin/pkg/nonwriter"
@@ -30,10 +30,8 @@ func (a Stopdnsrebind) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dn
 			continue
 		}
 
-		//parse the answer
-		s := strings.Split(ans.String(), "\t")
-
-		ip := net.ParseIP(s[4])
+		//get te field directly and convert it to net.IP
+		ip := net.IP(reflect.ValueOf(ans).Elem().Field(1).Bytes())
 
 		//check if private
 		if isPrivate(ip) {
