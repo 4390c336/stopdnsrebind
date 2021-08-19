@@ -3,7 +3,6 @@ package stopdnsrebind
 import (
 	"context"
 	"net"
-	"reflect"
 
 	"github.com/coredns/coredns/plugin"
 	"github.com/coredns/coredns/plugin/pkg/nonwriter"
@@ -25,13 +24,17 @@ func (a Stopdnsrebind) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dn
 	}
 
 	for _, ans := range nw.Msg.Answer {
-		//we only care about A and AAAA types
-		if ans.Header().Rrtype != dns.TypeA && ans.Header().Rrtype != dns.TypeAAAA {
+		var ip net.IP
+
+		switch ans.Header().Rrtype {
+		case dns.TypeA:
+			ip = ans.(*dns.A).A
+		case dns.TypeAAAA:
+			ip = ans.(*dns.AAAA).AAAA
+		default:
+			//we only care about A and AAA
 			continue
 		}
-
-		//get te field directly and convert it to net.IP
-		ip := net.IP(reflect.ValueOf(ans).Elem().Field(1).Bytes())
 
 		//check if private
 		if isPrivate(ip) {
