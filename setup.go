@@ -1,8 +1,6 @@
 package stopdnsrebind
 
 import (
-	"fmt"
-
 	"github.com/coredns/caddy"
 	"github.com/coredns/coredns/core/dnsserver"
 	"github.com/coredns/coredns/plugin"
@@ -18,9 +16,7 @@ func setup(c *caddy.Controller) error {
 			if c.Val() != "allow" {
 				return plugin.Error("stopdnsrebind", c.Err("only allow operation is supported"))
 			}
-
 			allowList = append(allowList, c.RemainingArgs()...)
-			fmt.Println("[DEBUG] allowList:", allowList)
 		}
 	}
 	dnsserver.GetConfig(c).AddPlugin(func(next plugin.Handler) plugin.Handler {
