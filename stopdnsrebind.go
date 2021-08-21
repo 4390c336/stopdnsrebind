@@ -6,15 +6,27 @@ import (
 
 	"github.com/coredns/coredns/plugin"
 	"github.com/coredns/coredns/plugin/pkg/nonwriter"
+	"github.com/coredns/coredns/request"
 	"github.com/miekg/dns"
 )
 
 type Stopdnsrebind struct {
-	Next plugin.Handler
+	Next      plugin.Handler
+	AllowList []string
 }
 
 // ServeDNS implements the plugin.Handler interface.
 func (a Stopdnsrebind) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Msg) (int, error) {
+
+	state := request.Request{W: w, Req: r}
+
+	//ignore if on the allow list
+	for _, allowed := range a.AllowList {
+		if allowed == state.QName() {
+			return 0, nil
+		}
+	}
+
 	nw := nonwriter.New(w)
 
 	rcode, err := plugin.NextOrFailure(a.Name(), a.Next, ctx, nw, r)

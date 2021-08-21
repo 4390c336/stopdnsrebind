@@ -19,6 +19,7 @@ type testHandler struct {
 type testcase struct {
 	Expected int
 	test     test.Case
+	config   string
 }
 
 func (t *testHandler) Name() string { return "test-handler" }
@@ -40,7 +41,7 @@ func TestBlockingResponse(t *testing.T) {
 			Expected: dns.RcodeSuccess,
 			test: test.Case{
 				Answer: []dns.RR{test.A("example.org. 0 IN A 1.1.1.1")},
-				Qname:  "example.org",
+				Qname:  "example.org.",
 				Qtype:  dns.TypeA,
 			},
 		},
@@ -48,7 +49,7 @@ func TestBlockingResponse(t *testing.T) {
 			Expected: dns.RcodeRefused,
 			test: test.Case{
 				Answer: []dns.RR{test.A("example.org. 0 IN A 169.254.169.254")},
-				Qname:  "example.org",
+				Qname:  "example.org.",
 				Qtype:  dns.TypeA,
 			},
 		},
@@ -56,7 +57,7 @@ func TestBlockingResponse(t *testing.T) {
 			Expected: dns.RcodeSuccess,
 			test: test.Case{
 				Answer: []dns.RR{test.AAAA("example.org. 0 IN AAAA 2a00:1450:4009:823::200e")},
-				Qname:  "example.org",
+				Qname:  "example.org.",
 				Qtype:  dns.TypeAAAA,
 			},
 		},
@@ -64,7 +65,7 @@ func TestBlockingResponse(t *testing.T) {
 			Expected: dns.RcodeRefused,
 			test: test.Case{
 				Answer: []dns.RR{test.AAAA("example.org. 0 IN AAAA ::1")},
-				Qname:  "example.org",
+				Qname:  "example.org.",
 				Qtype:  dns.TypeAAAA,
 			},
 		},
@@ -72,7 +73,7 @@ func TestBlockingResponse(t *testing.T) {
 			Expected: dns.RcodeRefused,
 			test: test.Case{
 				Answer: []dns.RR{test.AAAA("example.org. 0 IN AAAA ::ffff:0a00:0001")},
-				Qname:  "example.org",
+				Qname:  "example.org.",
 				Qtype:  dns.TypeAAAA,
 			},
 		},
@@ -80,7 +81,7 @@ func TestBlockingResponse(t *testing.T) {
 			Expected: dns.RcodeSuccess,
 			test: test.Case{
 				Answer: []dns.RR{test.MX("example.org. 585 IN MX 50 mx01.example.org.")},
-				Qname:  "example.org",
+				Qname:  "example.org.",
 				Qtype:  dns.TypeMX,
 			},
 		},
@@ -97,6 +98,10 @@ func TestBlockingResponse(t *testing.T) {
 		}
 		o := &Stopdnsrebind{Next: tHandler}
 		w := dnstest.NewRecorder(&test.ResponseWriter{})
+
+		if tc.config != "" {
+			o.AllowList = []string{"hello.com."}
+		}
 		_, err := o.ServeDNS(context.TODO(), w, m)
 
 		if err != nil {
