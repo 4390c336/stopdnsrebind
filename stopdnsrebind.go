@@ -23,7 +23,7 @@ func (a Stopdnsrebind) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dn
 	//ignore if on the allow list
 	for _, allowed := range a.AllowList {
 		if allowed == state.QName() {
-			return 0, nil
+			return plugin.NextOrFailure(a.Name(), a.Next, ctx, w, r)
 		}
 	}
 
