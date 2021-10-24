@@ -1,4 +1,4 @@
-# [WIP] stopdnsrebind
+# stopdnsrebind
 
 ## Name
 
