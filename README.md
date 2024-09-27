@@ -1,4 +1,4 @@
-# stopdnsrebind
+# coredns-rebind-protection
 
 ## Name
 
@@ -7,6 +7,8 @@
 ## Description
 
 With `stopdnsrebind` enabled, users are able to block addresses from upstream nameservers which are in the private ranges.
+
+The import order of this plugin matters, it is possible that it will not work depending on the import order
 
 ## Syntax
 
