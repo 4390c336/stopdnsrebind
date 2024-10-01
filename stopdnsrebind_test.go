@@ -2,6 +2,7 @@ package stopdnsrebind
 
 import (
 	"context"
+	"net"
 	"testing"
 
 	"github.com/coredns/coredns/plugin"
@@ -41,7 +42,7 @@ func TestBlockingResponse(t *testing.T) {
 			Expected: dns.RcodeSuccess,
 			test: test.Case{
 				Answer: []dns.RR{test.A("example.org. 0 IN A 1.1.1.1")},
-				Qname:  "example.org.",
+				Qname:  "TESTING IP: [1.1.1.1]",
 				Qtype:  dns.TypeA,
 			},
 		},
@@ -49,23 +50,72 @@ func TestBlockingResponse(t *testing.T) {
 			Expected: dns.RcodeRefused,
 			test: test.Case{
 				Answer: []dns.RR{test.A("example.org. 0 IN A 169.254.169.254")},
-				Qname:  "example.org.",
+				Qname:  "TESTING IP: [169.254.169.254]",
 				Qtype:  dns.TypeA,
-			},
-		},
-		{
-			Expected: dns.RcodeSuccess,
-			test: test.Case{
-				Answer: []dns.RR{test.AAAA("example.org. 0 IN AAAA 2a00:1450:4009:823::200e")},
-				Qname:  "example.org.",
-				Qtype:  dns.TypeAAAA,
 			},
 		},
 		{
 			Expected: dns.RcodeRefused,
 			test: test.Case{
+				Answer: []dns.RR{test.A("example.org. 0 IN A 10.0.0.1")},
+				Qname:  "TESTING IP: [10.0.0.1]",
+				Qtype:  dns.TypeA,
+			},
+		},
+		{
+			Expected: dns.RcodeRefused,
+			test: test.Case{
+				Answer: []dns.RR{test.A("example.org. 0 IN A 172.16.0.1")},
+				Qname:  "TESTING IP: [172.16.0.1]",
+				Qtype:  dns.TypeA,
+			},
+		},
+		{
+			Expected: dns.RcodeRefused,
+			test: test.Case{
+				Answer: []dns.RR{test.A("example.org. 0 IN A 192.168.0.1")},
+				Qname:  "TESTING IP: [192.168.0.1]",
+				Qtype:  dns.TypeA,
+			},
+		},
+		{
+			Expected: dns.RcodeRefused,
+			test: test.Case{
+				Answer: []dns.RR{test.A("example.org. 0 IN A 0.0.0.0")},
+				Qname:  "TESTING IP: [0.0.0.0]",
+				Qtype:  dns.TypeA,
+			},
+		},
+		{
+			Expected: dns.RcodeRefused,
+			test: test.Case{
+				Answer: []dns.RR{test.A("example.org. 0 IN A 224.0.0.0")},
+				Qname:  "TESTING IP: [224.0.0.0]",
+				Qtype:  dns.TypeA,
+			},
+		},
+		{
+			Expected: dns.RcodeRefused,
+			test: test.Case{
+				Answer: []dns.RR{test.A("example.org. 0 IN A 127.0.0.1")},
+				Qname:  "TESTING IP: [127.0.0.1]",
+				Qtype:  dns.TypeA,
+			},
+		},
+		{
+			Expected: dns.RcodeRefused,
+			test: test.Case{
+				Answer: []dns.RR{test.A("example.org. 0 IN A 192.0.2.1")},
+				Qname:  "TESTING IP: [192.0.2.1]",
+				Qtype:  dns.TypeA,
+			},
+			config: "yep",
+		},
+		{
+			Expected: dns.RcodeRefused,
+			test: test.Case{
 				Answer: []dns.RR{test.AAAA("example.org. 0 IN AAAA ::1")},
-				Qname:  "example.org.",
+				Qname:  "TESTING IP: [::1]",
 				Qtype:  dns.TypeAAAA,
 			},
 		},
@@ -73,7 +123,7 @@ func TestBlockingResponse(t *testing.T) {
 			Expected: dns.RcodeRefused,
 			test: test.Case{
 				Answer: []dns.RR{test.AAAA("example.org. 0 IN AAAA ::ffff:0a00:0001")},
-				Qname:  "example.org.",
+				Qname:  "TESTING IP: [::ffff:0a00:0001]",
 				Qtype:  dns.TypeAAAA,
 			},
 		},
@@ -81,7 +131,7 @@ func TestBlockingResponse(t *testing.T) {
 			Expected: dns.RcodeSuccess,
 			test: test.Case{
 				Answer: []dns.RR{test.MX("example.org. 585 IN MX 50 mx01.example.org.")},
-				Qname:  "example.org.",
+				Qname:  "TESTING IP: [mx01.example.org]",
 				Qtype:  dns.TypeMX,
 			},
 		},
@@ -99,8 +149,11 @@ func TestBlockingResponse(t *testing.T) {
 		o := &Stopdnsrebind{Next: tHandler}
 		w := dnstest.NewRecorder(&test.ResponseWriter{})
 
+		_, ipNet, _ := net.ParseCIDR("192.0.2.1/24")
+
 		if tc.config != "" {
 			o.AllowList = []string{"hello.com."}
+			o.DenyList = []net.IPNet{*ipNet}
 		}
 		_, err := o.ServeDNS(context.TODO(), w, m)
 
@@ -109,7 +162,7 @@ func TestBlockingResponse(t *testing.T) {
 		}
 
 		if w.Rcode != tc.Expected {
-			t.Error("Not the expected response", tc.test.Answer[0], "Rcode:", w.Rcode)
+			t.Error(tc.test.Qname, "failed", "| ANSWER: ", tc.test.Answer[0], "| Rcode:", w.Rcode)
 		}
 	}
 }
