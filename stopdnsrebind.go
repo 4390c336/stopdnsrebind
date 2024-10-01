@@ -13,6 +13,7 @@ import (
 type Stopdnsrebind struct {
 	Next      plugin.Handler
 	AllowList []string
+	DenyList  []net.IPNet
 }
 
 // ServeDNS implements the plugin.Handler interface.
@@ -48,8 +49,24 @@ func (a Stopdnsrebind) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dn
 			continue
 		}
 
-		//check if private
-		if isPrivate(ip) {
+		/*
+			🚀 Default blocking rules:
+
+			🔒 Loopback Addresses: 127.0.0.1/8
+			🔒 Private Addresses:
+				- 10.0.0.0/8
+				- 172.16.0.0/12
+				- 192.168.0.0/16
+			🔒 Link Local Addresses: 169.254.0.0/16
+			🔒 Unspecified: 0.0.0.0
+			🔒 Interface Local Multicast: 224.0.0.0/24
+			🔒 DenyList: Add your entries in the plugin configuration
+
+			// Keeping the network secure!
+		*/
+
+		if ip.To4() == nil || !ip.IsGlobalUnicast() ||
+			ip.IsPrivate() || ip.IsInterfaceLocalMulticast() || shouldDeny(ip, a.DenyList) {
 			m := new(dns.Msg)
 			m.SetRcode(r, dns.RcodeRefused)
 			w.WriteMsg(m)
@@ -62,25 +79,9 @@ func (a Stopdnsrebind) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dn
 	return 0, nil
 }
 
-var reservedIPv4Nets = []net.IPNet{
-	String2IPNet("192.0.2.1/24"),
-	String2IPNet("10.0.0.1/8"),
-	String2IPNet("127.0.0.1/8"),
-	String2IPNet("169.254.0.0/16"),
-}
-
-func String2IPNet(cidr string) net.IPNet {
-	_, ipnet, _ := net.ParseCIDR(cidr)
-	return *ipnet
-}
-
-func isPrivate(ip net.IP) bool {
-	if ip.To4() == nil && !ip.IsGlobalUnicast() {
-		return true
-	}
-
-	for _, privnet := range reservedIPv4Nets {
-		if privnet.Contains(ip) {
+func shouldDeny(ip net.IP, denyList []net.IPNet) bool {
+	for _, ipNetDenied := range denyList {
+		if ipNetDenied.Contains(ip) {
 			return true
 		}
 	}
