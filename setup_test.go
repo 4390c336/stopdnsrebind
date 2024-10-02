@@ -41,6 +41,27 @@ func Test_setup(t *testing.T) {
 			}`,
 			true,
 		},
+		{
+			"deny a valid ipNet",
+			`stopdnsrebind {
+				deny 192.0.2.1/24
+			}`,
+			false,
+		},
+		{
+			"deny multiple ipNet",
+			`stopdnsrebind {
+				deny 192.0.2.1/24 127.0.0.1/8
+			}`,
+			false,
+		},
+		{
+			"deny invalid ipNet",
+			`stopdnsrebind {
+				deny 192.0.2.1
+			}`,
+			true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

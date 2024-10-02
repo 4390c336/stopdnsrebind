@@ -1,6 +1,8 @@
 package stopdnsrebind
 
 import (
+	"net"
+
 	"github.com/coredns/caddy"
 	"github.com/coredns/coredns/core/dnsserver"
 	"github.com/coredns/coredns/plugin"
@@ -10,7 +12,7 @@ import (
 func init() { plugin.Register("stopdnsrebind", setup) }
 
 func setup(c *caddy.Controller) error {
-	allowList, err := parse(c)
+	allowList, denyList, err := parse(c)
 
 	//parsing err
 	if err != nil {
@@ -18,30 +20,41 @@ func setup(c *caddy.Controller) error {
 	}
 
 	dnsserver.GetConfig(c).AddPlugin(func(next plugin.Handler) plugin.Handler {
-		return Stopdnsrebind{Next: next, AllowList: allowList}
+		return Stopdnsrebind{Next: next, AllowList: allowList, DenyList: denyList}
 	})
 
 	return nil
 }
 
-func parse(c *caddy.Controller) ([]string, error) {
+func parse(c *caddy.Controller) ([]string, []net.IPNet, error) {
 	allowList := []string{}
+	denyList := []net.IPNet{}
 	for c.Next() {
 		for c.NextBlock() {
-			if c.Val() != "allow" {
-				return nil, plugin.Error("stopdnsrebind", c.Err("only allow operation is supported"))
-			}
+			switch c.Val() {
+			case "allow":
+				for _, d := range c.RemainingArgs() {
+					_, valid := dns.IsDomainName(d)
+					if !valid {
+						return nil, nil, plugin.Error("stopdnsrebind", c.Errf("%s is not a valid domain", d))
+					}
 
-			for _, d := range c.RemainingArgs() {
-				_, valid := dns.IsDomainName(d)
-				if !valid {
-					return nil, plugin.Error("stopdnsrebind", c.Errf("%s is not a valid domain", d))
+					allowList = append(allowList, d)
 				}
+			case "deny":
+				for _, cidr := range c.RemainingArgs() {
+					_, ipNet, err := net.ParseCIDR(cidr)
+					if err != nil {
+						return nil, nil, plugin.Error("stopdnsrebind", c.Errf("%s is not a valid cidr", cidr))
+					}
 
-				allowList = append(allowList, d)
+					denyList = append(denyList, *ipNet)
+				}
+			default:
+				return nil, nil, plugin.Error("stopdnsrebind", c.Err("only allow and deny operations are supported"))
 			}
 		}
 	}
 
-	return allowList, nil
+	return allowList, denyList, nil
 }
