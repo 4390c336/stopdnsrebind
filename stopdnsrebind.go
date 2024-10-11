@@ -65,8 +65,8 @@ func (a Stopdnsrebind) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dn
 			// Keeping the network secure!
 		*/
 
-		if ip.To4() == nil || !ip.IsGlobalUnicast() ||
-			ip.IsPrivate() || ip.IsInterfaceLocalMulticast() || shouldDeny(ip, a.DenyList) {
+		if !ip.IsGlobalUnicast() || ip.IsInterfaceLocalMulticast() ||
+			ip.IsPrivate() || shouldDeny(ip, a.DenyList) {
 			m := new(dns.Msg)
 			m.SetRcode(r, dns.RcodeRefused)
 			w.WriteMsg(m)

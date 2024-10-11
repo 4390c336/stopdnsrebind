@@ -42,47 +42,47 @@ func TestBlockingResponse(t *testing.T) {
 			Expected: dns.RcodeSuccess,
 			test: test.Case{
 				Answer: []dns.RR{test.A("example.org. 0 IN A 1.1.1.1")},
-				Qname:  "TESTING IP: [1.1.1.1]",
+				Qname:  "example.org.",
 				Qtype:  dns.TypeA,
 			},
 		},
 		{
 			Expected: dns.RcodeRefused,
 			test: test.Case{
-				Answer: []dns.RR{test.A("example.org. 0 IN A 169.254.169.254")},
-				Qname:  "TESTING IP: [169.254.169.254]",
+				Answer: []dns.RR{test.A("example.refused.org. 0 IN A 169.254.169.254")},
+				Qname:  "example.refused.org.",
 				Qtype:  dns.TypeA,
 			},
 		},
 		{
 			Expected: dns.RcodeRefused,
 			test: test.Case{
-				Answer: []dns.RR{test.A("example.org. 0 IN A 10.0.0.1")},
-				Qname:  "TESTING IP: [10.0.0.1]",
+				Answer: []dns.RR{test.A("example.refused.org. 0 IN A 10.0.0.1")},
+				Qname:  "example.refused.org.",
 				Qtype:  dns.TypeA,
 			},
 		},
 		{
 			Expected: dns.RcodeRefused,
 			test: test.Case{
-				Answer: []dns.RR{test.A("example.org. 0 IN A 172.16.0.1")},
-				Qname:  "TESTING IP: [172.16.0.1]",
+				Answer: []dns.RR{test.A("example.refused.org. 0 IN A 172.16.0.1")},
+				Qname:  "example.refused.org.",
 				Qtype:  dns.TypeA,
 			},
 		},
 		{
 			Expected: dns.RcodeRefused,
 			test: test.Case{
-				Answer: []dns.RR{test.A("example.org. 0 IN A 192.168.0.1")},
-				Qname:  "TESTING IP: [192.168.0.1]",
+				Answer: []dns.RR{test.A("example.refused.org. 0 IN A 192.168.0.1")},
+				Qname:  "example.refused.org.",
 				Qtype:  dns.TypeA,
 			},
 		},
 		{
 			Expected: dns.RcodeRefused,
 			test: test.Case{
-				Answer: []dns.RR{test.A("example.org. 0 IN A 0.0.0.0")},
-				Qname:  "TESTING IP: [0.0.0.0]",
+				Answer: []dns.RR{test.A("example.refused.org. 0 IN A 0.0.0.0")},
+				Qname:  "example.refused.org.",
 				Qtype:  dns.TypeA,
 			},
 		},
@@ -90,23 +90,23 @@ func TestBlockingResponse(t *testing.T) {
 			Expected: dns.RcodeRefused,
 			test: test.Case{
 				Answer: []dns.RR{test.A("example.org. 0 IN A 224.0.0.0")},
-				Qname:  "TESTING IP: [224.0.0.0]",
+				Qname:  "example.refused.org.",
 				Qtype:  dns.TypeA,
 			},
 		},
 		{
 			Expected: dns.RcodeRefused,
 			test: test.Case{
-				Answer: []dns.RR{test.A("example.org. 0 IN A 127.0.0.1")},
-				Qname:  "TESTING IP: [127.0.0.1]",
+				Answer: []dns.RR{test.A("example.refused.org. 0 IN A 127.0.0.1")},
+				Qname:  "example.refused.org.",
 				Qtype:  dns.TypeA,
 			},
 		},
 		{
 			Expected: dns.RcodeRefused,
 			test: test.Case{
-				Answer: []dns.RR{test.A("example.org. 0 IN A 192.0.2.1")},
-				Qname:  "TESTING IP: [192.0.2.1]",
+				Answer: []dns.RR{test.A("example.refused.org. 0 IN A 192.0.2.1")},
+				Qname:  "example.refused.org.",
 				Qtype:  dns.TypeA,
 			},
 			config: "yep",
@@ -114,16 +114,16 @@ func TestBlockingResponse(t *testing.T) {
 		{
 			Expected: dns.RcodeRefused,
 			test: test.Case{
-				Answer: []dns.RR{test.AAAA("example.org. 0 IN AAAA ::1")},
-				Qname:  "TESTING IP: [::1]",
+				Answer: []dns.RR{test.AAAA("example.refused.org. 0 IN AAAA ::1")},
+				Qname:  "example.refused.org.",
 				Qtype:  dns.TypeAAAA,
 			},
 		},
 		{
 			Expected: dns.RcodeRefused,
 			test: test.Case{
-				Answer: []dns.RR{test.AAAA("example.org. 0 IN AAAA ::ffff:0a00:0001")},
-				Qname:  "TESTING IP: [::ffff:0a00:0001]",
+				Answer: []dns.RR{test.AAAA("example.refused.org. 0 IN AAAA ::ffff:0a00:0001")},
+				Qname:  "example.refused.org.",
 				Qtype:  dns.TypeAAAA,
 			},
 		},
@@ -131,8 +131,16 @@ func TestBlockingResponse(t *testing.T) {
 			Expected: dns.RcodeSuccess,
 			test: test.Case{
 				Answer: []dns.RR{test.MX("example.org. 585 IN MX 50 mx01.example.org.")},
-				Qname:  "TESTING IP: [mx01.example.org]",
+				Qname:  "example.org.",
 				Qtype:  dns.TypeMX,
+			},
+		},
+		{
+			Expected: dns.RcodeSuccess,
+			test: test.Case{
+				Answer: []dns.RR{test.AAAA("example.test.valid.ipv6. 0 IN AAAA 2a04:4e42:200::644")},
+				Qname:  "example.test.valid.ipv6.",
+				Qtype:  dns.TypeAAAA,
 			},
 		},
 	}
