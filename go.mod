@@ -3,7 +3,7 @@ module github.com/4390c336/stopdnsrebind
 go 1.24.0
 
 require (
-	github.com/coredns/caddy v1.1.4-0.20250930002214-15135a999495
+	github.com/coredns/caddy v1.1.4
 	github.com/coredns/coredns v1.13.2
 	github.com/miekg/dns v1.1.68
 )
