@@ -10,31 +10,31 @@ With `stopdnsrebind` enabled, users are able to block addresses from upstream na
 
 The import order of this plugin matters, it is possible that it will not work depending on the import order
 
-# 🌐 Default Blocking Rules
+# Default Blocking Rules
 
-### 🔒 Loopback Addresses
+### Loopback Addresses
 - **`127.0.0.1/8`**
 
-### 🔒 Private Addresses
+### Private Addresses
 - **`10.0.0.0/8`**
 - **`172.16.0.0/12`**
 - **`192.168.0.0/16`**
 
-### 🔒 Link Local Addresses
+### Link Local Addresses
 - **`169.254.0.0/16`**
 
-### 🔒 Unspecified
+### Unspecified
 - **`0.0.0.0`**
 
-### 🔒 Interface Local Multicast
+### Interface Local Multicast
 - **`224.0.0.0/24`**
 
-### 🔒 DenyList
+### DenyList
 - Add your entries in the plugin configuration.
 
 ---
 
-Keeping the network secure! 🔐
+Keeping the network secure!
 
 ## Syntax
 

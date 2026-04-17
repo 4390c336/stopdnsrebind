@@ -1,6 +1,6 @@
 module github.com/4390c336/stopdnsrebind
 
-go 1.25.0
+go 1.26.2
 
 require (
 	github.com/coredns/caddy v1.1.4
